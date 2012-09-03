@@ -1,3 +1,6 @@
+import sys
+sys.path.append("./Samples")
+
 import survey
 
 def ReadTable():
@@ -32,7 +35,7 @@ def Mean(table,field):
         return float(sum(lst))/len(lst)
     else:
         return 0
-        
+ 
 if __name__ == '__main__':
     import sys
     table = ReadTable()

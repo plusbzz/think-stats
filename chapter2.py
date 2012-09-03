@@ -1,12 +1,14 @@
+import chapter1
+from chapter1 import *
 import Pmf
 
 def RemainingLifetime(pmf,age):
     new_pmf = Pmf.Pmf()
     
-    for val in new_pmf.Values():
+    for val in pmf.Values():
         remainder = val - age
         if remainder > 0:
-            new_pmf.set(remainder, pmf.Prob(val))
+            new_pmf.Set(remainder, pmf.Prob(val))
             
     return new_pmf
 
@@ -39,4 +41,54 @@ def ProbOnTime(pmf):
 
 def ProbLate(pmf):
     return BinProb(pmf,40)
+ 
+def GetFieldAsList(table,field):
+    return [getattr(rec,field) for rec in table.records]
+    
+def RelativeRisk(firsts_pmf, others_pmf):
+
+    rr_f_o_early = ProbEarly(firsts_pmf)/ProbEarly(others_pmf)   
+    print "Relative risk of early birth for first babies: ", rr_f_o_early
+    
+    rr_f_o = ProbOnTime(firsts_pmf)/ProbOnTime(others_pmf)   
+    print "Relative risk of on-time birth for first babies: ", rr_f_o
+        
+    rr_f_o_late = ProbLate(firsts_pmf)/ProbLate(others_pmf)   
+    print "Relative risk of late birth for first babies: ", rr_f_o_late
+ 
+def ConditionalDist(pmf,age):
+    new_pmf = Pmf.Pmf()
+    
+    for val in pmf.Values():
+        if val > age:
+            new_pmf.Set(val, pmf.Prob(val))
+     
+    new_pmf.Normalize()       
+    return new_pmf
+       
+def ConditionalProb(firsts_pmf, others_pmf):
+    results = []
+    for x in xrange(34,45):
+        x_firsts_prob = ConditionalDist(firsts_pmf,x).Prob(x+1)
+        x_others_prob = ConditionalDist(others_pmf,x).Prob(x+1)
+        results.append((x,x_firsts_prob,x_others_prob))
+    
+    print results
+    
+
+if __name__ == '__main__':
+    # Read data
+    table = ReadTable()
+    live_births = GetLiveBirths(table)    
+    firsts, others = PartitionPregnancies(live_births)
+    
+    # Get PMFs for each one
+    live_birth_pmf  = Pmf.MakePmfFromList(GetFieldAsList(live_births,"prglength"))
+    firsts_pmf      = Pmf.MakePmfFromList(GetFieldAsList(firsts,"prglength"))
+    others_pmf      = Pmf.MakePmfFromList(GetFieldAsList(others,"prglength"))
+    
+    RelativeRisk(firsts_pmf,others_pmf)
+
+    ConditionalProb(firsts_pmf,others_pmf)
+    
     
